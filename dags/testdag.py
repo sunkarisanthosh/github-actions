@@ -11,7 +11,7 @@ default_args = {
 dag_id = DAG{
     'test1',
     default_args=default_args,
-    description=''
+    description='hjh'
     schedule_interval=NONE,
     dagrun_timeout=timedelta(minutes=20))
   
