@@ -1,26 +1,28 @@
-
-
-import os
-import sys
-
-import pytest
+import unittest
 from airflow.models import DagBag
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "../dags"))
-sys.path.append(os.path.join(os.path.dirname(__file__), "../dags/utilities"))
+class TestDagIntegrity(unittest.TestCase):
+
+    LOAD_SECOND_THRESHOLD = 2
+
+    def setUp(self):
+        self.dagbag = DagBag()
+
+    def test_import_dags(self):
+        self.assertFalse(
+            len(self.dagbag.import_errors),
+            'DAG import failures. Errors: {}'.format(
+                self.dagbag.import_errors
+            )
+        )
+
+    def test_alert_email_present(self):
+
+        for dag_id, dag in self.dagbag.dags.iteritems():
+            emails = dag.default_args.get('email', [])
+            msg = 'Alert email not set for DAG {id}'.format(id=dag_id)
+            self.assertIn('alert.email@gmail.com', emails, msg)
 
 
-
-@pytest.fixture(params=["../dags/"])
-def dag_bag(request):
-    return DagBag(dag_folder=request.param, include_examples=False)
-
-
-
-
-
-def test_desc_len_greater_than_fifteen():
-    for dag, dag in dag_bag.dags.items():
-        assert len(dag.description) > 100
-
-
+suite = unittest.TestLoader().loadTestsFromTestCase(TestDagIntegrity)
+unittest.TextTestRunner(verbosity=2).run(suite)
