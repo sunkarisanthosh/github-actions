@@ -8,7 +8,7 @@ default_args = {
     'retry_delay': timedelta(minutes=5)
 }
 
-dag_id = DAG{
+dag = DAG{
     'test1',
     default_args=default_args,
     description='hjh'
