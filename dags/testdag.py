@@ -1,24 +1,38 @@
-from datetime import datetime
-from airflow import DAG
-from airflow.operators.dummy_operator import DummyOperator
-from airflow.operators.python_operator import PythonOperator
-from airflow.operators import MultiplyBy5Operator
+import argparse
 
-def print_hello():
- return 'Hello Wolrd'
+from pyspark.sql import SparkSession
 
-dag = DAG('hello_world', description='Hello world example', schedule_interval='0 12 * * *', start_date=datetime(2017, 3, 20), catchup=False)
-
-dummy_operator = DummyOperator(task_id='dummy_task', retries = 3, dag=dag)
-
-hello_operator = PythonOperator(task_id='hello_task', python_callable=print_hello, dag=dag)
-
-multiplyby5_operator = MultiplyBy5Operator(my_operator_param='my_operator_param',
-                                task_id='multiplyby5_task', dag=dag)
-
-dummy_operator >> hello_operator
-
-dummy_operator >> multiplyby5_operator
+APP_NAME = 'filter-countries'
 
 
-# 
+def filter_countries(spark, environment):
+    spark.sql("USE {0}_app".format(environment)).collect()
+
+    # Filter out countries we don't want to analyse, if either side is not allowed, we filter the line out
+    spark.sql("""
+        SELECT
+        t.*
+        FROM enrich_transactions t
+        LEFT JOIN countries pc ON t.payer_country = pc.country
+        LEFT JOIN countries bc ON t.beneficiary_country = bc.country
+        WHERE
+        pc.allowed AND bc.allowed
+        """).write \
+        .saveAsTable('filter_countries', format='parquet', mode='overwrite')
+
+
+if __name__ == "__main__":
+    # parse the parameters
+    parser = argparse.ArgumentParser(description='Filter Countries')
+    parser.add_argument('-e', dest='environment', action='store')
+    arguments = parser.parse_args()
+    # Init
+    spark = SparkSession.builder \
+        .appName(APP_NAME) \
+        .enableHiveSupport() \
+        .config('spark.sql.warehouse.dir', '/usr/local/airflow/spark_warehouse') \
+        .config('spark.hadoop.javax.jdo.option.ConnectionURL',
+                'jdbc:derby:;databaseName=/usr/local/airflow/metastore_db;create=true') \
+        .getOrCreate()
+
+    filter_countries(spark, arguments.environment)
