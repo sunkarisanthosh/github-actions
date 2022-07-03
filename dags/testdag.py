@@ -10,8 +10,6 @@
 # distributed under the License is distributed on an "AS IS" BASIS,
 
 
-"""Example Airflow DAG that creates a Cloud Dataproc cluster, runs the Hadoop
-wordcount example, and deletes the cluster.
 
 This DAG relies on three Airflow variables
 https://airflow.apache.org/docs/apache-airflow/stable/concepts/variables.html
