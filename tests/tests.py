@@ -1,7 +1,3 @@
-# Purpose: Pytest test for Data Lake and Redshift
-#          Airflow Demonstration project DAGs
-# Author: Gary A. Stafford
-# Modified: 2021-12-10
 
 import os
 import sys
