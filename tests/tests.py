@@ -1,28 +1,29 @@
-import unittest
-from airflow.models import DagBag
+"""Test integrity of dags."""
 
-class TestDagIntegrity(unittest.TestCase):
+import importlib
+import os
 
-    LOAD_SECOND_THRESHOLD = 2
+import pytest
+from airflow import models as af_models
 
-    def setUp(self):
-        self.dagbag = DagBag()
+DAG_PATH = os.path.join(
+    os.path.dirname(__file__), '..', 'dags'
+)
 
-    def test_import_dags(self):
-        self.assertFalse(
-            len(self.dagbag.import_errors),
-            'DAG import failures. Errors: {}'.format(
-                self.dagbag.import_errors
-            )
-        )
-
-    def test_alert_email_present(self):
-
-        for dag_id, dag in self.dagbag.dags.iteritems():
-            emails = dag.default_args.get('email', [])
-            msg = 'Alert email not set for DAG {id}'.format(id=dag_id)
-            self.assertIn('alert.email@gmail.com', emails, msg)
+DAG_FILES = [f for f in os.listdir(DAG_PATH) if f.endswith('airflowfile.py')]
 
 
-suite = unittest.TestLoader().loadTestsFromTestCase(TestDagIntegrity)
-unittest.TextTestRunner(verbosity=2).run(suite)
+@pytest.mark.parametrize('dag_file', DAG_FILES)
+def test_dag_integrity(dag_file):
+    """Import dag files and check for DAG."""
+    module_name, _ = os.path.splitext(dag_file)
+    module_path = os.path.join(DAG_PATH, dag_file)
+    mod_spec = importlib.util.spec_from_file_location(module_name, module_path)
+    module = importlib.util.module_from_spec(mod_spec)
+    mod_spec.loader.exec_module(module)
+
+    dag_objects = [var for var in vars(module).values() if isinstance(var, af_models.DAG)]
+    assert dag_objects
+
+    for dag in dag_objects:
+        dag.test_cycle()
