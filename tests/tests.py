@@ -20,7 +20,7 @@ def dag_bag(request):
 
 
 def test_desc_len_greater_than_fifteen(dag_bag):
-    for dag, dag in dag_bag.dags.items():
+    for dag_id, dag in dag_bag.dags.items():
         assert len(dag.description) > 100
 
 
