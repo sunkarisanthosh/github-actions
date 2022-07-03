@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# [START composer_hadoop_tutorial]
 """Example Airflow DAG that creates a Cloud Dataproc cluster, runs the Hadoop
 wordcount example, and deletes the cluster.
 
