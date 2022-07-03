@@ -11,7 +11,7 @@ default_args = {
 dag = DAG{
     'test1',
     default_args=default_args,
-    description='automated deployments test3'
+    description=''
     schedule_interval=NONE,
     dagrun_timeout=timedelta(minutes=20))
   
