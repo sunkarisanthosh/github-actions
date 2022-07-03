@@ -1,18 +1,10 @@
-
-import os
-import sys
+# test_capitalize.py
 
 import pytest
-from airflow.models import DagBag
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "../dags"))
-sys.path.append(os.path.join(os.path.dirname(__file__), "../dags/utilities"))
+def test_capital_case():
+    assert capital_case('semaphore') == 'Semaphore'
 
-
-@pytest.fixture(params=["../dags/"])
-def dag_bag(request):
-    return DagBag(dag_folder=request.param, include_examples=False)
-
-
-
-
+def test_raises_exception_on_non_string_arguments():
+    with pytest.raises(TypeError):
+        capital_case(9)
