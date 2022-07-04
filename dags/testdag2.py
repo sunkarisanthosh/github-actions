@@ -20,5 +20,4 @@ with DAG(
     tags=["data lake demo", "raw", "bronze"],
 ) as dag:
     begin = DummyOperator(task_id="begin")
-
     end = DummyOperator(task_id="end")
