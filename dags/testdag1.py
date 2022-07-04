@@ -10,10 +10,10 @@ from airflow.utils.dates import days_ago
 
 DAG_ID = os.path.basename(__file__).replace(".py", "")
 
-S3_BUCKET = Variable.get("data_lake_bucket")
+S3_BUCKET = Variable.get("db_volt_bucket")
 
 DEFAULT_ARGS = {
-    "owner": "garystafford",
+    "owner": "db-volt",
     "depends_on_past": False,
     "retries": 0,
     "email_on_failure": False,
@@ -22,12 +22,12 @@ DEFAULT_ARGS = {
 
 with DAG(
     dag_id=DAG_ID,
-    description="Prepare Data Lake Demonstration using BashOperator and AWS CLI vs. AWS Operators",
+    description="writing a sample dag for unit testing",
     default_args=DEFAULT_ARGS,
     dagrun_timeout=timedelta(minutes=5),
     start_date=days_ago(1),
     schedule_interval=None,
-    tags=["data lake demo"],
+    tags=["dag testing"],
 ) as dag:
     begin = DummyOperator(task_id="begin")
 
@@ -36,7 +36,7 @@ with DAG(
 #     
 
     delete_demo_s3_objects = BashOperator(
-        task_id="delete_demo_s3_objects",
+        task_id="delete_demo_gcs_bucket_objects",
         bash_command=f'aws s3 rm "s3://{S3_BUCKET}/tickit/" --recursive',
     )
 
